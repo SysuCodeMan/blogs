@@ -1,0 +1,72 @@
+//- Do not delete the following code.
+    The following code is used to preprocess the post list for generating JSONLD, post-list.pug
+-
+  const postList = page.posts && page.posts.reduce(function(result, post){
+    let excerpt = post.excerpt.replace(/\>\</g, '>\n<') || post.content.substr(0, 1000).replace(/\>\</g, '>\n<');
+    let hero = get_hero(post, theme);
+    let representImg = get_represent_image(post.seo && post.seo.image, hero);
+    result.jsonld.push({
+      "@type": "BlogPosting",
+      "headline": post.title || null,
+      "alternativeHeadline": post.subtitle || null,
+      "editor": {
+        "@type": "Person",
+        "name": config.author || null
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": config.author || null,
+        "logo": {
+          "@type": "imageObject",
+          "url": full_url(theme.profile.gravatar) || null
+        }
+      },
+      "author": {
+        "@type": "Person",
+        "name": config.author || null
+      },
+      "url": post.permalink || null,
+      "dateCreated":  date(post.date, null) || null,
+      "datePublished": date(post.date, null) || null,
+      "image": representImg && representImg.url ? {
+        "@type": "imageObject",
+        "url": representImg && representImg.url ? `${full_url(representImg.url)}` : null,
+        "width": representImg && representImg.width ? `${representImg.width}` : null,
+        "height": representImg && representImg.height ? `${representImg.height}` : null
+      } : null
+    });
+    result.list.push({
+      title: post.title,
+      subtitle: post.subtitle,
+      tags: post.tags,
+      categories: post.categories,
+      hero: !!post.hero && typeof post.hero ==='object' ? post.hero.url || null : post.hero || null,
+      thumbnail: post.thumbnail,
+      date: post.date,
+      link: url_for(post.link || post.path),
+      content: truncate(strip_html(excerpt), {length: 160, omission: '...' }),
+      id: post._id
+    });
+    return {
+      jsonld: result.jsonld,
+      list: result.list,
+    };
+  }, {
+    jsonld: [],
+    list: []
+  });
+
+doctype html
+html(lang=config.language)
+  head
+    include head
+  body(class= is_home() ? `home` : is_post() ? `post` : null)
+    include ./header
+
+    include ./container
+
+    include ./footer
+
+    include ./sidebar
+
+    include ./foot

@@ -1,0 +1,33 @@
+{
+  "name": "hexo-theme-amorfati",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "preinstall": "cd ../../ && npm install --save-dev hexo-renderer-pug",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "copyresource": "node copy-resource.js",
+    "postinstall": "npm run copyresource"
+  },
+  "keywords": [],
+  "author": {
+    "name": "Seongbong Ji",
+    "email": "mulder21c@gmail.com"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^5.13.0",
+    "spoqa-han-sans": "^2.1.2",
+    "typeface-noto-sans-kr": "0.0.63",
+    "webfontloader": "^1.6.28"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.0",
+    "autoprefixer": "^9.7.5",
+    "fs-extra": "^9.0.0",
+    "node-sass": "^4.13.1",
+    "postcss": "^7.0.27",
+    "uglify-js": "^3.8.1"
+  }
+}

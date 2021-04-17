@@ -1,0 +1,42 @@
+@mixin respond-to($breakpoint) {
+  @if map-has-key($breakpoints, $breakpoint) {
+    @media #{inspect(map-get($breakpoints, $breakpoint))} {
+      @content;
+    }
+  }
+
+  @else {
+    @warn "no value could be retrieved from `#{$breakpoint}`. ";
+  }
+}
+
+@mixin rgba-background($hexcolor, $opacity: 1) {
+  @if $opacity == 1 {
+    background-color: $hexcolor;
+  } @else {
+    background-color: $hexcolor;
+    background-color: rgba($hexcolor, $opacity);
+  }
+}
+
+@mixin ellipse($max-width) {
+  overflow: hidden;
+  max-width: $max-width;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+
+@mixin article-content-full-width {
+  max-width: calc(100% + 2rem);
+  margin-left: -1rem;
+  margin-right: -1rem;
+  width: calc(100% + 2rem);
+
+  @include respond-to('x-small') {
+    max-width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    width: auto;
+  }
+}

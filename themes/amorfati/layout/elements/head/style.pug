@@ -1,0 +1,14 @@
+//-
+  default css link
+link(rel="stylesheet" href= url_for("/css/style.css"))
+
+//-
+  post-specific styles
+if is_post() && page.style
+  style.
+    !{scss_post(page.style)}
+
+//-
+  highlight theme
+if config.highlight && config.highlight.enable
+  link(rel="stylesheet" href= url_for("/css/dracula.css"))
