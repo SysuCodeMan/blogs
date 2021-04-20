@@ -1,7 +1,7 @@
 ---
 title: Android TextView源码浅析之顶层流程
 date: 2021-04-16 17:52:48
-tags: Android源码
+tags: Android控件
 ---
 
 ### OverView

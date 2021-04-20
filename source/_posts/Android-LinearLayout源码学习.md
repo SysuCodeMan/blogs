@@ -1,7 +1,7 @@
 ---
 title: Android LinearLayout源码学习
 date: 2021-04-13 23:42:50
-tags: Android源码学习
+tags: Android布局
 ---
 ### Overview
 LinearLayout应该是Android开发中最常见的布局容器控件，可以实现子View的线性排列，通过layout_weight的可以方便地控制子View的大小。这篇文档目的在于通过对LinearLayout的源码阅读，理解LinearLayout的工作原理。

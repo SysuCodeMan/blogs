@@ -1,7 +1,7 @@
 ---
 title: Android ListView源码学习
 date: 2021-04-16 17:45:59
-tags: Android源码学习
+tags: Android控件
 ---
 ### OverView
 Android ListView 是Android中常用的长列表组件，其继承层次如下：

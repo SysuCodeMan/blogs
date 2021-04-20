@@ -1,7 +1,7 @@
 ---
 title: Android TextView源码浅析之Layout
 date: 2021-04-16 17:53:03
-tags: Android源码
+tags: Android控件
 ---
 ### OverView
 在上一篇从顶层整体流程分析TextView时能看到Layout这个重要概念，无论是onMeasure()过程还是onDraw()过程，主要工作都是由Layout来完成。

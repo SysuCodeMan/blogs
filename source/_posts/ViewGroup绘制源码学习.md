@@ -1,7 +1,7 @@
 ---
 title: ViewGroup绘制源码学习
 date: 2021-04-13 23:07:24
-tags: Android源码学习
+tags: Android Framework
 ---
 ViewGroup 
 > A ViewGroup is a special view that can contain other views. The view group is the base class for layouts and views containers. This class also defines the

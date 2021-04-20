@@ -4,7 +4,7 @@
 
 # Site
 title: ChrisChan的个人博客
-subtitle: ''
+subtitle: '解决问题'
 description: 'Android从业者，先是爱好者，然后才是工程师'
 keywords:
 author: ChrisChan
@@ -93,6 +93,13 @@ pagination_dir: page
 include:
 exclude:
 ignore:
+
+# search
+search:
+path: search.xml
+field: post
+format: html
+limit: 10000
 
 # Extensions
 ## Plugins: https://hexo.io/plugins/

@@ -1,7 +1,7 @@
 ---
 title: Android AbsoluteLayout源码学习
 date: 2021-04-16 17:43:07
-tags: Android源码学习
+tags: Android布局
 ---
 ### OverView
 Android AbsoluteLayout是Android六大布局之一，但目前已经处于Deprecated状态，废弃的原因在于，绝对布局使用的是绝对坐标进行定位，而Android的屏幕大小各种各样，使用绝对坐标必然在兼容性上有极大问题。尽管如此，还是了解一下其实现。（整个类代码也不足300行）

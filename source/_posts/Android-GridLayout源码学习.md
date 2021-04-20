@@ -1,7 +1,7 @@
 ---
 title: Android GridLayout源码学习
 date: 2021-04-16 17:38:53
-tags: Android源码学习
+tags: Android布局
 ---
 ### OverView
 FrameLayout也是Android开发中常用的布局之一，其特征是子View层层相叠，通过源码来了解其工作原理。

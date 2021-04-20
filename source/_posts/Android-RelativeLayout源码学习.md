@@ -1,7 +1,7 @@
 ---
 title: Android RelativeLayout源码学习
 date: 2021-04-13 23:46:10
-tags: Android源码学习
+tags: Android布局
 ---
 ### Overview
 RelativeLayout是Android中一种常用的布局，通过View之间的相互关系能够方便地确定子View的位置，通过源码的学习来看下Android是如何实现这一功能的。Android中的一个组件，工作原理主要在onMeasure(),onLayout(),onDraw()这3大阶段中。

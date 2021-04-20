@@ -1,7 +1,7 @@
 ---
 title: Android ImageView源码浅析
 date: 2021-04-16 17:50:43
-tags: Android源码学习
+tags: Android控件
 ---
 ### OverView
 官方文档中关于ImageView的介绍是：

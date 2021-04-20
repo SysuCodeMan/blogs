@@ -1,7 +1,7 @@
 ---
 title: View触摸事件传递源码学习
 date: 2021-04-13 23:35:57
-tags: Android源码学习
+tags: Android Framework
 ---
 ### 起点
 事件传递，属于我们人与机器交互的范畴，因此选择交互的载体——Activity作为起点。
