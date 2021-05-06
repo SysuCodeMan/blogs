@@ -7,7 +7,7 @@ tags: Android控件
 ### OverView
 RecyclerView是Android5.0推出的新组件，可以认为是更加灵活强大的ListView，在日常开发中基本上已经取代了ListView成为长列表控件的首选。
 其继承结构如下：
-![image.png](https://upload-images.jianshu.io/upload_images/5866715-c382744bd06ca4a8.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![](https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506174618.png)
 从继承结构可以看到，RecyclerView是ViewGroup的直接子类，这里就是RecyclerView与ListView第一点大不同，ListView和ViewGroup之间隔了两层，其实个人认为在继承结构上揭露了RecyclerView相比ListView的优点：由于RecyclerView这么简单的继承结构，说明了其主要功能都是通过**组合**来实现的，而ListView是通过**继承**实现的。
 
 ### 用法
@@ -25,8 +25,7 @@ RecyclerView是Android5.0推出的新组件，可以认为是更加灵活强大�
 ### Adapter
 - public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
 在源码中查找onCreateViewHolder(ViewGroup parent, int viewType)的调用，能得到下图
-![image.png](https://upload-images.jianshu.io/upload_images/5866715-20937ebf735b9cca.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-内一层是外一层的调用，最终可以看到主要的调用在LinearLayoutManager的onLayoutChildren()；直接的调用方法是在RecyclerView的tryGetViewHolderForPositionByDeadline(int position, boolean dryRun, long deadlineNs)中有这么1段：
+![](https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506174636.png)内一层是外一层的调用，最终可以看到主要的调用在LinearLayoutManager的onLayoutChildren()；直接的调用方法是在RecyclerView的tryGetViewHolderForPositionByDeadline(int position, boolean dryRun, long deadlineNs)中有这么1段：
 ``` java
                 if (holder == null) {
                     long start = getNanoTime();
@@ -87,7 +86,7 @@ RecyclerView是Android5.0推出的新组件，可以认为是更加灵活强大�
 
 - int getItemCount()
 这个方法的调用，在源码里看都是直接调用
-![image.png](https://upload-images.jianshu.io/upload_images/5866715-0b8d7170c3e44049.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![](https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506174757.png)
 
 - int getItemViewType(int position)
 这个方法在源码中的被调用位置主要是RecyclerView的tryGetViewHolderForPositionByDeadline()函数，这个函数在上面也已经出现过了
@@ -260,7 +259,7 @@ public void onLayoutChildren(Recycler recycler, State state) {
 - public void getItemOffsets(Rect outRect, View view, RecyclerView parent, State state)
 这个函数是，在每一项itemView绘制的时候，通过控制outRect的left/top/right/bottom值，来确定itemView四周留出来的范围，效果类似于padding或margin
 在源码中被调用的地方有：
-![image.png](https://upload-images.jianshu.io/upload_images/5866715-bf7a5a266bd563b9.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![](https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506174826.png)
 
 可以看到，主要是和measure有关的函数，很容易理解，因为就是在measure过程确定一个itemView占据多少空间
 
@@ -268,21 +267,19 @@ public void onLayoutChildren(Recycler recycler, State state) {
 ItemAnimator主要用于对item的插入、修改、删除动画处理主要有animateApprearance/animateDisappearance/animateChange/animatePersistence这几个在对应动作的函数
 - public abstract boolean animateAppearance(@NonNull ViewHolder viewHolder, @Nullable ItemHolderInfo preLayoutInfo, @NonNull ItemHolderInfo postLayoutInfo);
 在源码中查找animateAppearance的调用链为：
-![image.png](https://upload-images.jianshu.io/upload_images/5866715-f9faa327825620a5.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-最终又是在熟悉的dispatchLayoutStep3()中被调用
+![](https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506174844.png)最终又是在熟悉的dispatchLayoutStep3()中被调用
 ``` java
             // Step 4: Process view info lists and trigger animations
             mViewInfoStore.process(mViewInfoProcessCallback);
 ```
 但这一行并不是很能看出怎么就调用了animateAppearance，看下再上一步的调用：
-![image.png](https://upload-images.jianshu.io/upload_images/5866715-410a68952c1c2acf.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![](https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506174903.png)
 
 可以看到在调用process()函数的时候，是有根据record.flags来判断应该执行的是哪个处理
 
 -  public abstract boolean animateDisappearance(@NonNull ViewHolder viewHolder, @NonNull ItemHolderInfo preLayoutInfo, @Nullable ItemHolderInfo postLayoutInfo)
 在源码中查找其调用位置：
-![image.png](https://upload-images.jianshu.io/upload_images/5866715-79c3bdf424c8368c.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
-可以看到跟animateAppearance一样，最终都是被dispatchLayoutStep3()调用
+![](https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506174931.png)可以看到跟animateAppearance一样，最终都是被dispatchLayoutStep3()调用
 
 - public abstract boolean animateChange(@NonNull ViewHolder oldHolder,
                 @NonNull ViewHolder newHolder,

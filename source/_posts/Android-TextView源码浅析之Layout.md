@@ -391,7 +391,7 @@ BoringLayout和StaticLayout都是Layout的子类，其中BoringLayout是指不�
 ```
 - 这部分作用是从段落信息paragraphInfo[paraIndex]中取出测量相关的信息，后面准备使用
 
-```java
+``` java
                int breakCount = nComputeLineBreaks(
                         nativePtr,
 
@@ -739,7 +739,7 @@ private int out(final CharSequence text, final int start, final int end, int abo
 Layout.draw()实际上分成了两部分，drawBackground()和drawText()，下面看下它们的实现：
 
 ### Layout.drawBackground()
-```
+``` java
     public void drawBackground(Canvas canvas, Path highlight, Paint highlightPaint,
             int cursorOffsetVertical, int firstLine, int lastLine) {
         // First, draw LineBackgroundSpans.
@@ -817,7 +817,7 @@ Layout.draw()实际上分成了两部分，drawBackground()和drawText()，下�
 - 代码不长，可以看到Layout的drawBackground()实际上是通过LineBackgroundSpan.drawBackground()来完成的，而LineBackgroundSpan只是一个接口，在Android源码中并没有实现类，因此drawBackground()的实际绘制效果是使用时自己定义的
 
 ### Layout.drawText()
-![image.png](https://upload-images.jianshu.io/upload_images/5866715-104ca2a82c54aaac.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![](https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506175504.png)
 drawText()方法整体内容如图，主要的工作在for循环中，从注释中能看出，drawText()的过程是，逐行绘制，下面看下这个for循环内部的逻辑：
 
 ``` java

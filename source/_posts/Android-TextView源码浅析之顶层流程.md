@@ -13,7 +13,7 @@ public class TextView extends View implements ViewTreeObserver.OnPreDrawListener
 ```
 继承层次很简单，是View的直接子类，实现了ViewTreeObserver.OnPreDrawListener接口
 而在官方的文档中，能看到其子类有：
-![image.png](https://upload-images.jianshu.io/upload_images/5866715-b2cf6bc1d5ff0566.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![](https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506175259.png)
 基础控件中常用的Button, EditText都是派生自TextView，这也说明了学习TextView的源码是大有裨益的。
 
 ### 构造函数

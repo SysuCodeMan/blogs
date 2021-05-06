@@ -5,7 +5,7 @@ tags: Android控件
 ---
 ### OverView
 Android ListView 是Android中常用的长列表组件，其继承层次如下：
-![image.png](https://upload-images.jianshu.io/upload_images/5866715-5599c6565bf045a2.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![](https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506174447.png)
 
 ### 用法
 通常在业务代码中使用ListView的常用姿势是：

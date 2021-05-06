@@ -4,174 +4,213 @@ date: 2021-04-16 17:38:53
 tags: Android布局
 ---
 ### OverView
-FrameLayout也是Android开发中常用的布局之一，其特征是子View层层相叠，通过源码来了解其工作原理。
+GridLayout是Android4.0引入的网格控件，可以方便地实现网格式布局，减少嵌套层级，这周看下GridLayout具体的工作原理。
 
 ### onMeasure
-一个布局容器的工作原理无非就是onMeasure()/onLayout()/onDraw()3个阶段的处理，先来直接看下onMeasure()的实现：
+照例从测量阶段开始，看下GridLayout在测量阶段进行了什么操作：
 ``` java
     @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        int count = getChildCount();
+    protected void onMeasure(int widthSpec, int heightSpec) {
+        consistencyCheck();
 
-        final boolean measureMatchParentChildren =
-                MeasureSpec.getMode(widthMeasureSpec) != MeasureSpec.EXACTLY ||
-                MeasureSpec.getMode(heightMeasureSpec) != MeasureSpec.EXACTLY;
-        mMatchParentChildren.clear();
+        /** If we have been called by {@link View#measure(int, int)}, one of width or height
+         *  is  likely to have changed. We must invalidate if so. */
+        invalidateValues();
 
-        int maxHeight = 0;
-        int maxWidth = 0;
-        int childState = 0;
+        int hPadding = getPaddingLeft() + getPaddingRight();
+        int vPadding = getPaddingTop()  + getPaddingBottom();
 
-        for (int i = 0; i < count; i++) {
-            final View child = getChildAt(i);
-            if (mMeasureAllChildren || child.getVisibility() != GONE) {
-                measureChildWithMargins(child, widthMeasureSpec, 0, heightMeasureSpec, 0);
-                final LayoutParams lp = (LayoutParams) child.getLayoutParams();
-                maxWidth = Math.max(maxWidth,
-                        child.getMeasuredWidth() + lp.leftMargin + lp.rightMargin);
-                maxHeight = Math.max(maxHeight,
-                        child.getMeasuredHeight() + lp.topMargin + lp.bottomMargin);
-                childState = combineMeasuredStates(childState, child.getMeasuredState());
-                if (measureMatchParentChildren) {
-                    if (lp.width == LayoutParams.MATCH_PARENT ||
-                            lp.height == LayoutParams.MATCH_PARENT) {
-                        mMatchParentChildren.add(child);
+        int widthSpecSansPadding =  adjust( widthSpec, -hPadding);
+        int heightSpecSansPadding = adjust(heightSpec, -vPadding);
+
+        measureChildrenWithMargins(widthSpecSansPadding, heightSpecSansPadding, true);
+
+        int widthSansPadding;
+        int heightSansPadding;
+
+        // Use the orientation property to decide which axis should be laid out first.
+        if (mOrientation == HORIZONTAL) {
+            widthSansPadding = mHorizontalAxis.getMeasure(widthSpecSansPadding);
+            measureChildrenWithMargins(widthSpecSansPadding, heightSpecSansPadding, false);
+            heightSansPadding = mVerticalAxis.getMeasure(heightSpecSansPadding);
+        } else {
+            heightSansPadding = mVerticalAxis.getMeasure(heightSpecSansPadding);
+            measureChildrenWithMargins(widthSpecSansPadding, heightSpecSansPadding, false);
+            widthSansPadding = mHorizontalAxis.getMeasure(widthSpecSansPadding);
+        }
+
+        int measuredWidth  = Math.max(widthSansPadding  + hPadding, getSuggestedMinimumWidth());
+        int measuredHeight = Math.max(heightSansPadding + vPadding, getSuggestedMinimumHeight());
+
+        setMeasuredDimension(
+                resolveSizeAndState(measuredWidth,   widthSpec, 0),
+                resolveSizeAndState(measuredHeight, heightSpec, 0));
+    }
+```
+
+GridLayout的onMeasure()方法并不长，可以分成以下3个部分：
+- 兼容性检查、参数校验、padding的计算与调整
+- 对子View进行第一次测量
+- 对子View进行第二次测量
+
+其中对子View的测量是通过调用measureChildrenWithMargins()实现的，看下这个函数的实现：
+``` java
+private void measureChildrenWithMargins(int widthSpec, int heightSpec, boolean firstPass) {
+        for (int i = 0, N = getChildCount(); i < N; i++) {
+            View c = getChildAt(i);
+            if (c.getVisibility() == View.GONE) continue;
+            LayoutParams lp = getLayoutParams(c);
+            if (firstPass) {
+                measureChildWithMargins2(c, widthSpec, heightSpec, lp.width, lp.height);
+            } else {
+                boolean horizontal = (mOrientation == HORIZONTAL);
+                Spec spec = horizontal ? lp.columnSpec : lp.rowSpec;
+                if (spec.getAbsoluteAlignment(horizontal) == FILL) {
+                    Interval span = spec.span;
+                    Axis axis = horizontal ? mHorizontalAxis : mVerticalAxis;
+                    int[] locations = axis.getLocations();
+                    int cellSize = locations[span.max] - locations[span.min];
+                    int viewSize = cellSize - getTotalMargin(c, horizontal);
+                    if (horizontal) {
+                        measureChildWithMargins2(c, widthSpec, heightSpec, viewSize, lp.height);
+                    } else {
+                        measureChildWithMargins2(c, widthSpec, heightSpec, lp.width, viewSize);
                     }
                 }
             }
         }
-
-        // ……
     }
 ```
-FrameLayout的onMeasure()过程比LinearLayout/RelativeLayout都要简洁，分成两部分，上面是第一部分的源码，其处理过程很简单：
-- 遍历一次子View，通过调用measureChildWithMargins()方法，完成了对子View的一次测量
-- 随后会判断子View是否需要match_parent，如需要将加入到mMatchParentChildren集合中，待下一阶段处理
+在这个函数中，可以看到有1个for循环来遍历子View，然后通过firstPass参数判断是第一轮测量还是第二轮测量，如果是第一轮测量，传入的参数是lp.width/lp.height来对子View进行测量；
+关键在于第二轮测量的处理，可以看到如果spec.getAbsoluteAlignment(horizontal) == FILL这个条件不成立的话，第二轮测量实际上是没有对子View进行测量操作的。
+
+我们来看下spec.getAbsoluteAlignment(horizontal) 这个的实现：
 
 ``` java
-    @Override
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-        // ……
-
-        count = mMatchParentChildren.size();
-        if (count > 1) {
-            for (int i = 0; i < count; i++) {
-                final View child = mMatchParentChildren.get(i);
-                final MarginLayoutParams lp = (MarginLayoutParams) child.getLayoutParams();
-
-                final int childWidthMeasureSpec;
-                if (lp.width == LayoutParams.MATCH_PARENT) {
-                    final int width = Math.max(0, getMeasuredWidth()
-                            - getPaddingLeftWithForeground() - getPaddingRightWithForeground()
-                            - lp.leftMargin - lp.rightMargin);
-                    childWidthMeasureSpec = MeasureSpec.makeMeasureSpec(
-                            width, MeasureSpec.EXACTLY);
-                } else {
-                    childWidthMeasureSpec = getChildMeasureSpec(widthMeasureSpec,
-                            getPaddingLeftWithForeground() + getPaddingRightWithForeground() +
-                            lp.leftMargin + lp.rightMargin,
-                            lp.width);
-                }
-
-                final int childHeightMeasureSpec;
-                if (lp.height == LayoutParams.MATCH_PARENT) {
-                    final int height = Math.max(0, getMeasuredHeight()
-                            - getPaddingTopWithForeground() - getPaddingBottomWithForeground()
-                            - lp.topMargin - lp.bottomMargin);
-                    childHeightMeasureSpec = MeasureSpec.makeMeasureSpec(
-                            height, MeasureSpec.EXACTLY);
-                } else {
-                    childHeightMeasureSpec = getChildMeasureSpec(heightMeasureSpec,
-                            getPaddingTopWithForeground() + getPaddingBottomWithForeground() +
-                            lp.topMargin + lp.bottomMargin,
-                            lp.height);
-                }
-
-                child.measure(childWidthMeasureSpec, childHeightMeasureSpec);
+private Alignment getAbsoluteAlignment(boolean horizontal) {
+            if (alignment != UNDEFINED_ALIGNMENT) {
+                return alignment;
             }
+            if (weight == 0f) {
+                return horizontal ? START : BASELINE;
+            }
+            return FILL;
+        }
+```
+可以看到，这个函数的返回结果和alignment与weight的值有关，weight的值就是我们设置给某个单元格的行/列权重，alignment与设置的gravity有关：
+``` java
+    static Alignment getAlignment(int gravity, boolean horizontal) {
+        int mask = horizontal ? HORIZONTAL_GRAVITY_MASK : VERTICAL_GRAVITY_MASK;
+        int shift = horizontal ? AXIS_X_SHIFT : AXIS_Y_SHIFT;
+        int flags = (gravity & mask) >> shift;
+        switch (flags) {
+            case (AXIS_SPECIFIED | AXIS_PULL_BEFORE):
+                return horizontal ? LEFT : TOP;
+            case (AXIS_SPECIFIED | AXIS_PULL_AFTER):
+                return horizontal ? RIGHT : BOTTOM;
+            case (AXIS_SPECIFIED | AXIS_PULL_BEFORE | AXIS_PULL_AFTER):
+                return FILL;
+            case AXIS_SPECIFIED:
+                return CENTER;
+            case (AXIS_SPECIFIED | AXIS_PULL_BEFORE | RELATIVE_LAYOUT_DIRECTION):
+                return START;
+            case (AXIS_SPECIFIED | AXIS_PULL_AFTER | RELATIVE_LAYOUT_DIRECTION):
+                return END;
+            default:
+                return UNDEFINED_ALIGNMENT;
         }
     }
 ```
-在onMeasure()的第二部分，会将之前一次遍历中发现的需要将width或者height设置成match_parent的子View再进行一次处理，对其再进行一次正确宽高值的measure调用。
+由此可以得出，**第二轮测量，实际上是根据gravity和weight值的设定，将多余的空间再次分配给子单元格**
 
-### onLayout
+### onLayout()
 ``` java
     @Override
     protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
-        layoutChildren(left, top, right, bottom, false /* no force left gravity */);
-    }
-```
-```
-    void layoutChildren(int left, int top, int right, int bottom, boolean forceLeftGravity) {
-        final int count = getChildCount();
+        consistencyCheck();
 
-        final int parentLeft = getPaddingLeftWithForeground();
-        final int parentRight = right - left - getPaddingRightWithForeground();
+        int targetWidth = right - left;
+        int targetHeight = bottom - top;
 
-        final int parentTop = getPaddingTopWithForeground();
-        final int parentBottom = bottom - top - getPaddingBottomWithForeground();
+        int paddingLeft = getPaddingLeft();
+        int paddingTop = getPaddingTop();
+        int paddingRight = getPaddingRight();
+        int paddingBottom = getPaddingBottom();
 
-        for (int i = 0; i < count; i++) {
-            final View child = getChildAt(i);
-            if (child.getVisibility() != GONE) {
-                final LayoutParams lp = (LayoutParams) child.getLayoutParams();
+        mHorizontalAxis.layout(targetWidth - paddingLeft - paddingRight);
+        mVerticalAxis.layout(targetHeight - paddingTop - paddingBottom);
 
-                final int width = child.getMeasuredWidth();
-                final int height = child.getMeasuredHeight();
+        int[] hLocations = mHorizontalAxis.getLocations();
+        int[] vLocations = mVerticalAxis.getLocations();
 
-                int childLeft;
-                int childTop;
+        for (int i = 0, N = getChildCount(); i < N; i++) {
+            View c = getChildAt(i);
+            if (c.getVisibility() == View.GONE) continue;
+            LayoutParams lp = getLayoutParams(c);
+            Spec columnSpec = lp.columnSpec;
+            Spec rowSpec = lp.rowSpec;
 
-                int gravity = lp.gravity;
-                if (gravity == -1) {
-                    gravity = DEFAULT_CHILD_GRAVITY;
-                }
+            Interval colSpan = columnSpec.span;
+            Interval rowSpan = rowSpec.span;
 
-                final int layoutDirection = getLayoutDirection();
-                final int absoluteGravity = Gravity.getAbsoluteGravity(gravity, layoutDirection);
-                final int verticalGravity = gravity & Gravity.VERTICAL_GRAVITY_MASK;
+            int x1 = hLocations[colSpan.min];
+            int y1 = vLocations[rowSpan.min];
 
-                switch (absoluteGravity & Gravity.HORIZONTAL_GRAVITY_MASK) {
-                    case Gravity.CENTER_HORIZONTAL:
-                        childLeft = parentLeft + (parentRight - parentLeft - width) / 2 +
-                        lp.leftMargin - lp.rightMargin;
-                        break;
-                    case Gravity.RIGHT:
-                        if (!forceLeftGravity) {
-                            childLeft = parentRight - width - lp.rightMargin;
-                            break;
-                        }
-                    case Gravity.LEFT:
-                    default:
-                        childLeft = parentLeft + lp.leftMargin;
-                }
+            int x2 = hLocations[colSpan.max];
+            int y2 = vLocations[rowSpan.max];
 
-                switch (verticalGravity) {
-                    case Gravity.TOP:
-                        childTop = parentTop + lp.topMargin;
-                        break;
-                    case Gravity.CENTER_VERTICAL:
-                        childTop = parentTop + (parentBottom - parentTop - height) / 2 +
-                        lp.topMargin - lp.bottomMargin;
-                        break;
-                    case Gravity.BOTTOM:
-                        childTop = parentBottom - height - lp.bottomMargin;
-                        break;
-                    default:
-                        childTop = parentTop + lp.topMargin;
-                }
+            int cellWidth = x2 - x1;
+            int cellHeight = y2 - y1;
 
-                child.layout(childLeft, childTop, childLeft + width, childTop + height);
+            int pWidth = getMeasurement(c, true);
+            int pHeight = getMeasurement(c, false);
+
+            Alignment hAlign = columnSpec.getAbsoluteAlignment(true);
+            Alignment vAlign = rowSpec.getAbsoluteAlignment(false);
+
+            Bounds boundsX = mHorizontalAxis.getGroupBounds().getValue(i);
+            Bounds boundsY = mVerticalAxis.getGroupBounds().getValue(i);
+
+            // Gravity offsets: the location of the alignment group relative to its cell group.
+            int gravityOffsetX = hAlign.getGravityOffset(c, cellWidth - boundsX.size(true));
+            int gravityOffsetY = vAlign.getGravityOffset(c, cellHeight - boundsY.size(true));
+
+            int leftMargin = getMargin(c, true, true);
+            int topMargin = getMargin(c, false, true);
+            int rightMargin = getMargin(c, true, false);
+            int bottomMargin = getMargin(c, false, false);
+
+            int sumMarginsX = leftMargin + rightMargin;
+            int sumMarginsY = topMargin + bottomMargin;
+
+            // Alignment offsets: the location of the view relative to its alignment group.
+            int alignmentOffsetX = boundsX.getOffset(this, c, hAlign, pWidth + sumMarginsX, true);
+            int alignmentOffsetY = boundsY.getOffset(this, c, vAlign, pHeight + sumMarginsY, false);
+
+            int width = hAlign.getSizeInCell(c, pWidth, cellWidth - sumMarginsX);
+            int height = vAlign.getSizeInCell(c, pHeight, cellHeight - sumMarginsY);
+
+            int dx = x1 + gravityOffsetX + alignmentOffsetX;
+
+            int cx = !isLayoutRtl() ? paddingLeft + leftMargin + dx :
+                    targetWidth - width - paddingRight - rightMargin - dx;
+            int cy = paddingTop + y1 + gravityOffsetY + alignmentOffsetY + topMargin;
+
+            if (width != c.getMeasuredWidth() || height != c.getMeasuredHeight()) {
+                c.measure(makeMeasureSpec(width, EXACTLY), makeMeasureSpec(height, EXACTLY));
             }
+            c.layout(cx, cy, cx + width, cy + height);
         }
     }
 ```
-FrameLayout的onLayout()过程也很清晰：
-- 遍历子View，根据gravity值的不同进行相应的childLeft/childTop值的处理
-- 通过调整后的childLeft/childTop值，调用child的layout方法，进行布局
+GridLayout的onLayout()函数乍看起来有点长，但明确onLayout()阶段目的之后就可以很好地梳理该函数的实现，onLayout()阶段的目的是确定好各个子View的位置，而对于GridLayout来说，子View的位置是通过x行y列这样的方式来设置的，因此只要计算出x行y列相应的坐标即可。
 
-### onDraw
-FrameLayout没有重写onDraw()方法
+在onLayout()函数中需要特别注意的一点是，如果某个子View算出来的width和测量得到的width不一致时，会将算出的width传入子View再调用1次measure
+
+### onDraw()
+GridLayout作为容器布局，也没有重写onDraw()函数。
 
 ### 总结
-相对LinearLayout和RelativeLayout而言，FrameLayout的功能比较简单，因此onMeasure()和onLayout()的实现都比较简洁，在onMeasure()过程，最好情况是测量一次子View，最坏情况是两次。
+GridLayout的实现相对简单，主要注意几个点：
+- 测量阶段会循环遍历2次子View，但第2次循环不一定会对子View进行测量
+- 布局阶段有可能还会对子View进行measure()方法的调用。

@@ -9,17 +9,17 @@ ViewGroup
 
 ### Overview
 首先看下ViewGroup的继承层次：
-```
+``` java
 public abstract class ViewGroup extends View implements ViewParent, ViewManager 
 ```
 可以看到ViewGroup与View第一个不同点在于，ViewGroup是一个抽象类，继承自View，实现了ViewParent和ViewManager两个接口
 
 ### ViewParent和ViewManager
 首先是ViewParent这个接口，内含的部分方法如下：
-![ViewParent部分方法](https://upload-images.jianshu.io/upload_images/5866715-e627c1cecca60435.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![ViewParent部分方法](https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506172925.png)
 
 其次是ViewManager的方法：
-![ViewManager](https://upload-images.jianshu.io/upload_images/5866715-ae2ee8eff4fffb96.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![ViewManager](https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506173006.png)
 ViewManager的方法很好理解，对View进行的增删改3个操作
 
 ### 构造方法
@@ -153,7 +153,7 @@ public final void layout(int l, int t, int r, int b) {
 ```
 
 更加关键的是onLayout()方法，这里变成了abstract抽象方法，这也是为什么ViewGroup是一个抽象类的原因
-```
+``` java
     protected abstract void onLayout(b
             oolean changed,
             int l, int t, int r, int b);

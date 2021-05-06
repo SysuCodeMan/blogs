@@ -8,7 +8,7 @@ tags: Android控件
 Displays image resources, for example Bitmap or Drawable resources. ImageView is also commonly used to apply tints to an image and handle image scaling.
 即用来展示图像资源的控件。
 其继承层次为
-![image.png](https://upload-images.jianshu.io/upload_images/5866715-cc8fc944cabf6d5d.png?imageMogr2/auto-orient/strip%7CimageView2/2/w/1240)
+![](https://raw.githubusercontent.com/SysuCodeMan/PicBed/main/20210506175117.png)
 
 ### ImageView.ScaleType
 在ImageView中有一个内部枚举类ScaleType，用来控制图像和ImageView的尺寸不一致时的拉伸规则：
