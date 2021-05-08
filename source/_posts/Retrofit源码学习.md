@@ -5,7 +5,7 @@ tags: 网络框架
 ---
 
 ### Overview
-Retrofit是Square公司开源的一款android网络请求库，官方介绍是Retrofit turns your HTTP API into a Java interface；说明主要作用是将HTTP API转换成Java接口，更方便使用
+Retrofit是Square公司开源的一款android网络请求库，官方介绍是Retrofit turns your HTTP API into a Java interface；说明主要作用是将HTTP API转换成Java接口，更方便使用。Retrofit这个词的中文意思是"改装"。
 
 ### 官方用法
 通过注解定义请求路径和参数
