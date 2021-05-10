@@ -6,7 +6,7 @@ tags: 图片加载框架
 ### Overview
 > Fresco is a powerful system for displaying images in Android applications. ——官方说明
 
-Fresco是Facebook公司开源的一款图片加载框架。Fresco一词的含义是”壁画“。
+Fresco是Facebook公司开源的一款图片加载框架。Fresco一词的含义是“壁画”。
 
 ### 示例用法
 进行全局初始化
